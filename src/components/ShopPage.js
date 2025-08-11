@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { API_URL } from '../config/api';
 import Navbar from './Navbar';
 import './ShopPage.css';
 
@@ -20,12 +21,20 @@ const ShopPage = () => {
   const productsPerPage = 6;
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/products')
+    fetch(`${API_URL}/barang`)
       .then(res => res.json())
-      .then(data => setProducts(Array.isArray(data) ? data : []));
-    fetch('http://localhost:5000/api/categories')
+      .then(data => setProducts(Array.isArray(data) ? data : []))
+      .catch(err => {
+        console.error('Error fetching products:', err);
+        setProducts([]);
+      });
+    fetch(`${API_URL}/kategori`)
       .then(res => res.json())
-      .then(data => setCategories(Array.isArray(data) ? data : []));
+      .then(data => setCategories(Array.isArray(data) ? data : []))
+      .catch(err => {
+        console.error('Error fetching categories:', err);
+        setCategories([]);
+      });
   }, []);
 
   // Sync selectedCategory with URL param

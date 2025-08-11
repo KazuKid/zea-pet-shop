@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { API_URL } from "../config/api";
 import "./HomePage.css";
 import Navbar from "./Navbar";
 
@@ -7,9 +8,10 @@ const HomePage = () => {
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/categories')
+    fetch(`${API_URL}/kategori`)
       .then(res => res.json())
-      .then(data => setCategories(Array.isArray(data) ? data : []));
+      .then(data => setCategories(Array.isArray(data) ? data : []))
+      .catch(err => console.error('Error fetching categories:', err));
   }, []);
 
   // Mapping background class secara manual sesuai urutan kategori

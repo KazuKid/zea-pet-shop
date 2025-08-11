@@ -5,20 +5,22 @@ const API_CONFIG = {
     API_URL: 'http://localhost:5000/api'
   },
   production: {
-    BASE_URL: process.env.REACT_APP_API_URL || window.location.origin,
-    API_URL: `${process.env.REACT_APP_API_URL || window.location.origin}/api`
+    BASE_URL: window.location.origin,
+    API_URL: `${window.location.origin}/api`
   }
 };
 
+// Force production mode for Vercel deployment
+const isVercel = window.location.hostname.includes('vercel.app');
 const ENV = process.env.NODE_ENV || 'development';
-const config = API_CONFIG[ENV];
+const actualEnv = isVercel ? 'production' : ENV;
+const config = API_CONFIG[actualEnv];
 
 export const BASE_URL = config.BASE_URL;
 export const API_URL = config.API_URL;
 
-// For Vercel deployment, we need to use relative URLs
-const isVercel = process.env.REACT_APP_VERCEL === 'true' || window.location.hostname.includes('vercel.app');
-const API_BASE = isVercel ? '/api' : config.API_URL;
+// Use consistent API base for all endpoints
+const API_BASE = config.API_URL;
 
 // Specific API endpoints
 export const ENDPOINTS = {
