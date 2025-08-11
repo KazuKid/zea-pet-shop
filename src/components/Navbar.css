@@ -1,0 +1,81 @@
+.navbar {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .navbar-top {
+    background-color: #6b8e4a;
+    text-align: center;
+    height: 31px;
+    line-height: 31px;
+    color: white;
+    font-size: 14px;
+    width: 100%; /* Gunakan 100% agar sesuai dengan body */
+  }
+  
+  .navbar-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #f7f7e8;
+    width: 100%; /* Gunakan 100% agar memenuhi layar */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-top: 20px; /* Tambahkan jarak 20px antara navbar-top dan navbar-main */
+    margin-bottom: 20px;
+  }
+  
+  .logo img {
+    max-width: 150px; /* Sesuaikan lebar maksimum logo */
+    height: auto; /* Otomatis menyesuaikan tinggi */
+    display: block; /* Pastikan logo adalah elemen blok */
+  }
+
+  .navbar-main .logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #6b8e4a;
+  }
+  
+  .navbar-main nav ul {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .navbar-main nav ul li {
+    color: #6b8e4a;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .navbar-main nav ul li a {
+    text-decoration: none; /* Menghilangkan garis bawah */
+    color: #6b8e4a; /* Warna hijau */
+    font-weight: bold; /* Membuat teks lebih tebal jika diinginkan */
+  }
+
+  .navbar-main nav ul li a:hover {
+    color: #8db66b; /* Warna saat hover (opsional) */
+  }
+
+  .navbar-main .auth a {
+    color: #6b8e4a;
+    text-decoration: none;
+    font-size: 14px;
+  }
+
+  .login-link {
+    text-decoration: none;
+    color: #6b8e4a;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s ease;
+  }
+  
+  .login-link:hover {
+    color: #8db66b;
+  }
+  

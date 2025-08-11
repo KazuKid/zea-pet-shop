@@ -1,0 +1,66 @@
+/* Tema yang lebih lembut untuk mata */
+:root {
+  /* Warna utama */
+  --primary-bg: #f5f5f0;
+  --secondary-bg: #fafafa;
+  --accent-green: #6b8e4a;
+  --soft-green: #8db66b;
+  --light-green: #f7f7e8;
+  
+  /* Warna teks */
+  --text-primary: #2c3e2d;
+  --text-secondary: #5a6c5b;
+  --text-muted: #6c757d;
+  
+  /* Shadow dan border */
+  --soft-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  --border-color: #e0e0e0;
+}
+
+/* Override untuk elemen yang masih menggunakan putih terang */
+.card, .modal-content, .dropdown-menu {
+  background-color: var(--secondary-bg) !important;
+}
+
+/* Untuk Bootstrap card yang masih putih */
+.card-body {
+  background-color: var(--secondary-bg);
+}
+
+/* Untuk table yang masih putih */
+.table {
+  background-color: var(--secondary-bg);
+}
+
+.table th, .table td {
+  border-color: var(--border-color);
+}
+
+/* Untuk form controls */
+.form-control, .form-select {
+  background-color: var(--secondary-bg);
+  border-color: var(--border-color);
+}
+
+.form-control:focus, .form-select:focus {
+  background-color: var(--secondary-bg);
+  border-color: var(--accent-green);
+  box-shadow: 0 0 0 0.2rem rgba(107, 142, 74, 0.25);
+}
+
+/* Untuk button yang masih terlalu terang */
+.btn-light {
+  background-color: var(--secondary-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.btn-light:hover {
+  background-color: var(--light-green);
+  border-color: var(--accent-green);
+}
+
+/* Untuk modal dan overlay */
+.modal-backdrop {
+  background-color: rgba(44, 62, 45, 0.5);
+}

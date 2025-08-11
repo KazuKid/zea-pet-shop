@@ -1,0 +1,38 @@
+.payment-page {
+  padding: 40px 20px;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+.card {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border: none;
+}
+
+.card-header {
+  background-color: #007bff;
+  color: white;
+  font-weight: 600;
+}
+
+.btn-success {
+  background-color: #00aa5b;
+  border-color: #00aa5b;
+  font-weight: 600;
+}
+
+.btn-success:hover {
+  background-color: #008a4a;
+  border-color: #008a4a;
+}
+
+.btn-success:disabled {
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+
+@media (max-width: 768px) {
+  .payment-page {
+    padding: 20px 10px;
+  }
+}

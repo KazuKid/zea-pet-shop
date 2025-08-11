@@ -1,0 +1,262 @@
+/* Global Styles */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f0;
+  }
+
+  body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%; /* Tinggi penuh untuk viewport */
+    display: flex;
+    flex-direction: column; /* Atur layout secara vertikal */
+  }
+  
+  .homepage {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Tinggi minimum adalah 100% viewport */
+  }
+
+  /* Konten utama (Hero dan kategori) */
+main {
+    flex: 1; /* Isi sisa ruang antara navbar dan footer */
+  }
+  
+  /* Navbar */
+  
+  /* Hero Section */
+  .hero {
+    display: flex; /* Tata letak horizontal */
+    justify-content: space-between; /* Jarak antara teks dan gambar */
+    align-items: center; /* Pusatkan elemen secara vertikal */
+    background-color: #6b8e4a;
+    width: 100%; /* Lebar penuh */
+    height: 456px; /* Tinggi menyesuaikan konten */
+    padding: 40px; /* Tambahkan ruang di sekitar elemen */
+    border-radius: 10px; /* Sudut melengkung */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Tambahkan bayangan */
+  }
+  
+  .hero-text {
+    color: white; /* Warna teks */
+    max-width: 50%; /* Batasi lebar teks */
+  }
+  
+  .hero-text h1 {
+    font-size: 36px; /* Ukuran font untuk heading */
+    margin-bottom: 10px; /* Jarak bawah heading */
+  }
+  
+  .hero-text p {
+    font-size: 18px; /* Ukuran font untuk paragraf */
+    line-height: 1.6; /* Jarak antar baris teks */
+  }
+  
+  .hero-image {
+    flex: 1;
+    padding: 10px;
+    display: flex;
+    justify-content: flex-end; /* Geser gambar ke kanan */
+  }
+  
+  .hero-image .carousel {
+    max-width: 100%; /* Lebar penuh carousel */
+    max-height: 100%; /* Tinggi penuh Hero Section */
+    overflow: hidden; /* Sembunyikan bagian gambar yang melampaui */
+    border-radius: 10px; /* Sudut melengkung */
+  }
+  
+  .carousel-item img {
+    width: 100%; /* Lebar gambar memenuhi area */
+    height: 400px; /* Tentukan tinggi gambar */
+    object-fit: cover; /* Pastikan gambar memenuhi area tanpa distorsi */
+  }
+  
+  .carousel-control-prev-icon,
+  .carousel-control-next-icon {
+    background-color: rgba(255, 255, 255, 0.8); /* Ikon dengan latar belakang putih transparan */
+    border-radius: 50%; /* Ikon berbentuk lingkaran */
+  }
+
+  /* Categories Section */
+  .categories {
+    text-align: center;
+    margin-top: 40px; /* Tambahkan jarak dari .hero */
+    margin-bottom: 60px; /* Jarak bawah untuk estetika */
+  }
+  
+  .categories h2 {
+    font-size: 24px;
+    color: #6b8e4a;
+    margin-bottom: 30px;
+  }
+  
+  .category-list {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 30px; /* Jarak antar kategori */
+  }
+  
+  .category-item {
+    position: relative;
+    width: 250px;
+    height: 140px;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    cursor: pointer;
+  }
+  
+  .category-background-1 {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('/src/background/petfood1.jpg') no-repeat center center;
+    background-size: cover;
+    filter: blur(4px);
+    opacity: 0.8;
+    z-index: 0;
+  }
+
+  .category-background-2 {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('/src/background/petsnack1.jpg') no-repeat center center;
+    background-size: cover;
+    filter: blur(4px);
+    opacity: 0.8;
+    z-index: 0;
+  }
+
+  .category-background-3 {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('/src/background/petvitamin1.jpg') no-repeat center center;
+    background-size: cover;
+    filter: blur(4px);
+    opacity: 0.8;
+    z-index: 0;
+  }
+
+  .category-background-4 {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('/src/background/pettoys1.jpg') no-repeat center center;
+    background-size: cover;
+    filter: blur(4px);
+    opacity: 0.8;
+    z-index: 0;
+  }
+
+  .category-background-5 {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('/src/background/petacc.jpg') no-repeat center center;
+    background-size: cover;
+    filter: blur(5px);
+    opacity: 0.8;
+    z-index: 0;
+  }
+
+  .category-background-6 {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('/src/background/petsand1.jpg') no-repeat center center;
+    background-size: cover;
+    filter: blur(4px);
+    opacity: 0.8;
+    z-index: 0;
+  }
+
+
+  .category-item p {
+    position: relative;
+    z-index: 1;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+  }
+  
+
+  /* Footer */
+  footer {
+    background-color: #6b8e4a;
+  color: white;
+  text-align: center;
+  padding: 10px 0;
+  width: 100%; /* Lebar penuh */
+  position: relative;
+  }
+
+  .footer-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    position: relative;
+  }
+
+  .footer-content p {
+    margin: 0;
+    font-size: 14px;
+  }
+
+  .footer-cs {
+    font-weight: bold;
+    color: #f0f8e8;
+    position: absolute;
+    right: 20px;
+  }
+
+  /* Responsive footer untuk mobile */
+  @media (max-width: 768px) {
+    .footer-content {
+      flex-direction: column;
+      gap: 5px;
+      text-align: center;
+      position: relative;
+    }
+
+    .footer-cs {
+      position: relative;
+      right: auto;
+    }
+
+    .footer-content p {
+      font-size: 12px;
+    }
+  }
+  
