@@ -88,10 +88,10 @@ app.get('/api/setup-database', async (req, res) => {
     const checkTables = await pool.query(`
       SELECT table_name 
       FROM information_schema.tables 
-      WHERE table_schema = 'public' AND table_name IN ('kategori', 'barang', 'pembeli', 'orders', 'order_items')
+      WHERE table_schema = 'public' AND table_name IN ('kategori', 'barang', 'pembeli', 'admin', 'orders', 'order_items')
     `);
 
-    if (checkTables.rows.length >= 5) {
+    if (checkTables.rows.length >= 6) {
       return res.json({ 
         success: true, 
         message: 'Database already setup', 
@@ -121,7 +121,18 @@ app.get('/api/setup-database', async (req, res) => {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
 
-      -- 3. Tabel Pembeli
+      -- 3. Tabel Admin
+      CREATE TABLE IF NOT EXISTS admin (
+        id_admin SERIAL PRIMARY KEY,
+        username VARCHAR(100) UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        nama_admin VARCHAR(255),
+        email VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      -- 4. Tabel Pembeli
       CREATE TABLE IF NOT EXISTS pembeli (
         id_pembeli SERIAL PRIMARY KEY,
         username VARCHAR(100) UNIQUE NOT NULL,
@@ -176,14 +187,24 @@ app.get('/api/setup-database', async (req, res) => {
     // Insert admin user (password: admin123)
     const hashedAdminPassword = await bcrypt.hash('admin123', 10);
     await pool.query(`
+      INSERT INTO admin (
+        username, password, nama_admin, email
+      ) VALUES (
+        'admin', $1, 'Administrator', 'admin@zeapetshop.com'
+      ) ON CONFLICT (username) DO NOTHING;
+    `, [hashedAdminPassword]);
+
+    // Insert sample buyer (password: user123)
+    const hashedUserPassword = await bcrypt.hash('user123', 10);
+    await pool.query(`
       INSERT INTO pembeli (
         username, password, nama_pembeli, negara_pembeli, 
         provinsi_pembeli, kota_pembeli, alamat1_pembeli
       ) VALUES (
-        'admin', $1, 'Administrator', 'Indonesia',
-        'DKI Jakarta', 'Jakarta Pusat', 'Jl. Admin No. 1'
+        'user1', $1, 'John Doe', 'Indonesia',
+        'DKI Jakarta', 'Jakarta Pusat', 'Jl. User No. 1'
       ) ON CONFLICT (username) DO NOTHING;
-    `, [hashedAdminPassword]);
+    `, [hashedUserPassword]);
 
     // Create indexes
     await pool.query(`
@@ -239,6 +260,32 @@ app.get('/api/products', async (req, res) => {
   }
 });
 
+// Indonesian endpoints (aliases for compatibility)
+app.get('/api/kategori', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM kategori ORDER BY nama_kategori');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/barang', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT p.*, k.nama_kategori 
+      FROM barang p 
+      LEFT JOIN kategori k ON p.id_kategori = k.id_kategori 
+      ORDER BY p.nama_barang
+    `);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Login endpoint
 app.post('/api/login', async (req, res) => {
   try {
@@ -248,13 +295,32 @@ app.post('/api/login', async (req, res) => {
       return res.status(400).json({ error: 'Username dan password harus diisi' });
     }
 
-    const result = await pool.query('SELECT * FROM pembeli WHERE username = $1', [username]);
+    let user = null;
+    let userRole = null;
+    let userId = null;
+
+    // First check admin table
+    const adminResult = await pool.query('SELECT * FROM admin WHERE username = $1', [username]);
     
-    if (result.rows.length === 0) {
+    if (adminResult.rows.length > 0) {
+      user = adminResult.rows[0];
+      userRole = 'admin';
+      userId = user.id_admin;
+    } else {
+      // If not found in admin, check pembeli table
+      const buyerResult = await pool.query('SELECT * FROM pembeli WHERE username = $1', [username]);
+      
+      if (buyerResult.rows.length > 0) {
+        user = buyerResult.rows[0];
+        userRole = 'user';
+        userId = user.id_pembeli;
+      }
+    }
+
+    if (!user) {
       return res.status(401).json({ error: 'Username atau password salah' });
     }
 
-    const user = result.rows[0];
     const isValidPassword = await bcrypt.compare(password, user.password);
     
     if (!isValidPassword) {
@@ -263,9 +329,9 @@ app.post('/api/login', async (req, res) => {
 
     const token = jwt.sign(
       { 
-        id: user.id_pembeli, 
+        id: userId, 
         username: user.username,
-        role: user.username === 'admin' ? 'admin' : 'user'
+        role: userRole
       },
       SECRET_KEY,
       { expiresIn: '8h' }
@@ -275,10 +341,10 @@ app.post('/api/login', async (req, res) => {
       success: true,
       token,
       user: {
-        id: user.id_pembeli,
+        id: userId,
         username: user.username,
-        nama_pembeli: user.nama_pembeli,
-        role: user.username === 'admin' ? 'admin' : 'user'
+        nama_pembeli: user.nama_pembeli || user.nama_admin,
+        role: userRole
       }
     });
   } catch (error) {
@@ -326,6 +392,151 @@ app.post('/api/register', async (req, res) => {
   } catch (error) {
     console.error('Register error:', error);
     res.status(500).json({ error: 'Terjadi kesalahan server' });
+  }
+});
+
+// Product management endpoints (Admin)
+app.post('/api/products', authenticateToken, async (req, res) => {
+  try {
+    const { nama_barang, harga, stok_barang, gambar_barang, id_kategori, deskripsi } = req.body;
+    const result = await pool.query(
+      'INSERT INTO barang (nama_barang, harga, stok_barang, gambar_barang, id_kategori, deskripsi) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+      [nama_barang, harga, stok_barang, gambar_barang, id_kategori, deskripsi]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error creating product:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.put('/api/products/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nama_barang, harga, stok_barang, gambar_barang, id_kategori, deskripsi } = req.body;
+    const result = await pool.query(
+      'UPDATE barang SET nama_barang = $1, harga = $2, stok_barang = $3, gambar_barang = $4, id_kategori = $5, deskripsi = $6 WHERE id_barang = $7 RETURNING *',
+      [nama_barang, harga, stok_barang, gambar_barang, id_kategori, deskripsi, id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error updating product:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.delete('/api/products/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query('DELETE FROM barang WHERE id_barang = $1 RETURNING *', [id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+    res.json({ message: 'Product deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting product:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Buyers endpoints (Admin)
+app.get('/api/buyers', authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT id_pembeli, username, nama_pembeli, negara_pembeli, provinsi_pembeli, kota_pembeli, alamat1_pembeli, kode_pos, ktp_pembeli FROM pembeli ORDER BY nama_pembeli');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching buyers:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.put('/api/buyers/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { username, password, nama_pembeli, negara_pembeli, provinsi_pembeli, kota_pembeli, alamat1_pembeli, kode_pos, ktp_pembeli } = req.body;
+    
+    let query, values;
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      query = `UPDATE pembeli SET username = $1, password = $2, nama_pembeli = $3, negara_pembeli = $4, provinsi_pembeli = $5, kota_pembeli = $6, alamat1_pembeli = $7, kode_pos = $8, ktp_pembeli = $9 WHERE id_pembeli = $10 RETURNING *`;
+      values = [username, hashedPassword, nama_pembeli, negara_pembeli, provinsi_pembeli, kota_pembeli, alamat1_pembeli, kode_pos, ktp_pembeli, id];
+    } else {
+      query = `UPDATE pembeli SET username = $1, nama_pembeli = $2, negara_pembeli = $3, provinsi_pembeli = $4, kota_pembeli = $5, alamat1_pembeli = $6, kode_pos = $7, ktp_pembeli = $8 WHERE id_pembeli = $9 RETURNING *`;
+      values = [username, nama_pembeli, negara_pembeli, provinsi_pembeli, kota_pembeli, alamat1_pembeli, kode_pos, ktp_pembeli, id];
+    }
+    
+    const result = await pool.query(query, values);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Buyer not found' });
+    }
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error updating buyer:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.delete('/api/buyers/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query('DELETE FROM pembeli WHERE id_pembeli = $1 RETURNING *', [id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Buyer not found' });
+    }
+    res.json({ message: 'Buyer deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting buyer:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Orders endpoints (Admin)
+app.get('/api/orders', authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT o.*, p.nama_pembeli 
+      FROM orders o 
+      LEFT JOIN pembeli p ON o.id_pembeli = p.id_pembeli 
+      ORDER BY o.created_at DESC
+    `);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.put('/api/orders/:id/status', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    
+    const result = await pool.query('UPDATE orders SET status = $1 WHERE order_id = $2 RETURNING *', [status, id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error updating order status:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.put('/api/orders/:id/cancel', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const result = await pool.query('UPDATE orders SET status = $1 WHERE order_id = $2 RETURNING *', ['cancelled', id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error cancelling order:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

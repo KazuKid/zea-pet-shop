@@ -21,13 +21,13 @@ const LoginPage = () => {
       const data = await res.json();
       // Periksa apakah login sukses dan ada token
       if (data.success && data.token) {
-        localStorage.setItem("role", data.role);
-        localStorage.setItem("username", data.username);
+        localStorage.setItem("role", data.user.role);
+        localStorage.setItem("username", data.user.username);
         localStorage.setItem("token", data.token); // Simpan token
         // Redirect ke homepage dengan state untuk trigger reload
         navigate("/", { state: { isLoggedIn: true } }); 
       } else {
-        setError(data.message || "Username/password salah.");
+        setError(data.error || data.message || "Username/password salah.");
       }
     } catch (err) {
       setError("Terjadi kesalahan server.");

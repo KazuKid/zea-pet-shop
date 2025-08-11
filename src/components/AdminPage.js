@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
 import './AdminPage.css';
-
-const API_URL = 'http://localhost:5000/api/products';
+import { API_URL } from '../config/api';
 
 const AdminPage = () => {
   const navigate = useNavigate();
@@ -55,7 +54,7 @@ const AdminPage = () => {
 
   // Fetch products
   const fetchProducts = async () => {
-    const res = await fetch(API_URL);
+    const res = await fetch(`${API_URL}/products`);
     let data = await res.json();
     if (!Array.isArray(data)) data = [];
     setProducts(data);
@@ -63,7 +62,7 @@ const AdminPage = () => {
 
   // Fetch kategori
   const fetchCategories = async () => {
-    const res = await fetch('http://localhost:5000/api/categories');
+    const res = await fetch(`${API_URL}/categories`);
     let data = await res.json();
     if (!Array.isArray(data)) data = [];
     setCategories(data);
@@ -85,7 +84,12 @@ const AdminPage = () => {
   // Fetch pembeli
   const fetchBuyers = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/buyers');
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/buyers`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       if (res.ok) {
         const data = await res.json();
         setBuyers(Array.isArray(data) ? data : []);
@@ -137,10 +141,11 @@ const AdminPage = () => {
         updateData.password = buyerForm.password;
       }
 
-      const res = await fetch(`http://localhost:5000/api/buyers/${buyerForm.id_pembeli}`, {
+      const res = await fetch(`${API_URL}/buyers/${buyerForm.id_pembeli}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
         body: JSON.stringify(updateData)
       });
@@ -174,8 +179,11 @@ const AdminPage = () => {
   const handleBuyerDelete = async (id_pembeli) => {
     if (window.confirm('Apakah Anda yakin ingin menghapus pembeli ini?')) {
       try {
-        const res = await fetch(`http://localhost:5000/api/buyers/${id_pembeli}`, {
-          method: 'DELETE'
+        const res = await fetch(`${API_URL}/buyers/${id_pembeli}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
         });
 
         if (res.ok) {
@@ -215,7 +223,12 @@ const AdminPage = () => {
   // Fetch pesanan
   const fetchOrders = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/orders');
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/orders`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       if (res.ok) {
         const data = await res.json();
         setOrders(Array.isArray(data) ? data : []);
@@ -228,10 +241,11 @@ const AdminPage = () => {
   // Update status pesanan
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/orders/${orderId}/status`, {
+      const res = await fetch(`${API_URL}/orders/${orderId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
         body: JSON.stringify({ status: newStatus })
       });
@@ -252,10 +266,11 @@ const AdminPage = () => {
   const cancelOrder = async (orderId) => {
     if (window.confirm('Apakah Anda yakin ingin membatalkan pesanan ini?')) {
       try {
-        const res = await fetch(`http://localhost:5000/api/orders/${orderId}/cancel`, {
+        const res = await fetch(`${API_URL}/orders/${orderId}/cancel`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
         });
 
@@ -684,7 +699,7 @@ const AdminPage = () => {
                   <td>
                     {product.gambar_barang && (
                       <img
-                        src={`http://localhost:5000/${product.gambar_barang}`}
+                        src={`/${product.gambar_barang}`}
                         alt={product.nama_barang}
                         style={{ width: '50px', height: '50px', objectFit: 'cover' }}
                       />
