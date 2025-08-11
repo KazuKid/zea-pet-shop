@@ -15,8 +15,6 @@ const ShopPage = () => {
   const navigate = useNavigate();
   const query = useQuery();
   const [selectedCategory, setSelectedCategory] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 6;
 
@@ -41,7 +39,7 @@ const ShopPage = () => {
   useEffect(() => {
     const kategoriParam = query.get('kategori');
     setSelectedCategory(kategoriParam || '');
-  }, [location.search]);
+  }, [location.search, query]);
 
   // Saat user klik kategori di ShopPage, update URL agar bisa navigasi antar kategori
   const handleCategoryChange = (id) => {
@@ -135,22 +133,6 @@ const ShopPage = () => {
     loadCartFromDatabase();
     // Dependensi diubah ke location.state.isLoggedIn untuk memuat ulang saat login berhasil
   }, [location.state?.isLoggedIn]);
-
-  const handleLogin = async () => {
-    const response = await fetch('http://localhost:5000/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
-    });
-
-    if (response.ok) {
-      const { token } = await response.json();
-      localStorage.setItem('token', token);
-      alert('Login berhasil!');
-    } else {
-      alert('Login gagal!');
-    }
-  };
 
   const filteredProducts = selectedCategory
     ? products.filter(p => String(p.id_kategori) === String(selectedCategory))

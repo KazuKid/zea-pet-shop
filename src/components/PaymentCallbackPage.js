@@ -10,8 +10,8 @@ const PaymentCallbackPage = () => {
 
   useEffect(() => {
     const orderId = searchParams.get('order_id');
-    const statusCode = searchParams.get('status_code');
-    const transactionStatus = searchParams.get('transaction_status');
+    // const statusCode = searchParams.get('status_code');
+    // const transactionStatus = searchParams.get('transaction_status');
 
     if (orderId) {
       checkPaymentStatus(orderId);

@@ -237,6 +237,7 @@ const AccountPage = () => {
         clearInterval(interval);
       };
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [username, activeTab]); // Removed function dependencies to prevent infinite loop
 
   if (!username) {
