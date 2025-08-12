@@ -78,7 +78,131 @@ const upload = multer({
 
 // Test route
 app.get('/api/test', (req, res) => {
-  res.json({ message: 'API is working on Vercel!', timestamp: new Date().toISOString() });
+  res.json({ 
+    message: 'API is working on Vercel!', 
+    timestamp: new Date().toISOString(),
+    version: '2.0.0',
+    endpoints: [
+      '/api/test',
+      '/api/test-db',  
+      '/api/test-midtrans',
+      '/api/setup-database',
+      '/api/login',
+      '/api/register',
+      '/api/products',
+      '/api/categories'
+    ]
+  });
+});
+
+// Database connection test
+app.get('/api/test-db', async (req, res) => {
+  try {
+    console.log('Testing database connection...');
+    const result = await pool.query('SELECT NOW() as current_time, version() as pg_version');
+    
+    // Test if tables exist
+    const tableCheck = await pool.query(`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = 'public' AND table_name IN ('admin', 'pembeli', 'kategori', 'barang', 'orders', 'order_items')
+    `);
+    
+    // Count users and products
+    let adminCount = 0, buyerCount = 0, productCount = 0, categoryCount = 0;
+    try {
+      const adminResult = await pool.query('SELECT COUNT(*) FROM admin');
+      adminCount = adminResult.rows[0].count;
+      
+      const buyerResult = await pool.query('SELECT COUNT(*) FROM pembeli');  
+      buyerCount = buyerResult.rows[0].count;
+
+      const productResult = await pool.query('SELECT COUNT(*) FROM barang');
+      productCount = productResult.rows[0].count;
+
+      const categoryResult = await pool.query('SELECT COUNT(*) FROM kategori');
+      categoryCount = categoryResult.rows[0].count;
+    } catch (e) {
+      console.log('Error counting records:', e.message);
+    }
+    
+    res.json({ 
+      success: true,
+      message: 'Database connection successful!',
+      database_time: result.rows[0].current_time,
+      pg_version: result.rows[0].pg_version,
+      tables_found: tableCheck.rows.map(r => r.table_name),
+      record_counts: { 
+        admin: adminCount, 
+        buyers: buyerCount, 
+        products: productCount, 
+        categories: categoryCount 
+      },
+      environment: {
+        NODE_ENV: process.env.NODE_ENV,
+        has_database_url: !!process.env.DATABASE_URL,
+        has_jwt_secret: !!process.env.JWT_SECRET,
+        has_midtrans_server: !!process.env.MIDTRANS_SERVER_KEY,
+        has_midtrans_client: !!process.env.MIDTRANS_CLIENT_KEY,
+        midtrans_is_production: process.env.MIDTRANS_IS_PRODUCTION
+      }
+    });
+  } catch (error) {
+    console.error('Database test error:', error);
+    res.status(500).json({ 
+      success: false,
+      error: error.message,
+      code: error.code,
+      hint: 'Check DATABASE_URL environment variable'
+    });
+  }
+});
+
+// Midtrans configuration test
+app.get('/api/test-midtrans', async (req, res) => {
+  try {
+    console.log('Testing Midtrans configuration...');
+    
+    // Check if Midtrans keys are configured
+    if (!process.env.MIDTRANS_SERVER_KEY || !process.env.MIDTRANS_CLIENT_KEY) {
+      return res.status(400).json({
+        success: false,
+        error: 'Midtrans keys not configured',
+        missing: {
+          server_key: !process.env.MIDTRANS_SERVER_KEY,
+          client_key: !process.env.MIDTRANS_CLIENT_KEY
+        },
+        hint: 'Set MIDTRANS_SERVER_KEY and MIDTRANS_CLIENT_KEY in environment variables'
+      });
+    }
+
+    // Test basic configuration
+    const config = {
+      isProduction: process.env.MIDTRANS_IS_PRODUCTION === 'true',
+      serverKey: process.env.MIDTRANS_SERVER_KEY,
+      clientKey: process.env.MIDTRANS_CLIENT_KEY
+    };
+
+    res.json({
+      success: true,
+      message: 'Midtrans configuration loaded successfully!',
+      config: {
+        isProduction: config.isProduction,
+        hasServerKey: !!config.serverKey,
+        hasClientKey: !!config.clientKey,
+        serverKeyPrefix: config.serverKey ? config.serverKey.substring(0, 10) + '...' : null,
+        clientKeyPrefix: config.clientKey ? config.clientKey.substring(0, 10) + '...' : null,
+        environment: config.isProduction ? 'production' : 'sandbox'
+      }
+    });
+  } catch (error) {
+    console.error('Midtrans test error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      hint: 'Check Midtrans environment variables'
+    });
+  }
 });
 
 // Setup database tables (ONLY USE ONCE!)

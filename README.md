@@ -1,12 +1,12 @@
-# Getting Started with Create React App
+# 🚀 ZEA PET SHOP - COMPLETE E-COMMERCE SOLUTION
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 🏪 **Project Overview**
+Complete pet shop e-commerce application with React frontend, Node.js backend, PostgreSQL database, and Midtrans payment integration.
 
-## Available Scripts
-
-In the project directory, you can run:
-
-### `npm start`
+## 🌐 **Live Demo**
+- **Website:** https://zea-pet-shop.vercel.app
+- **Admin Panel:** Login with admin credentials
+- **User Shopping:** Full e-commerce experience
 
 Runs the app in the development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
